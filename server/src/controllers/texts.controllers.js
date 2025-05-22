@@ -2,19 +2,21 @@ const Text = require("../models/text.model");
 
 async function saveText(req, res) {
   try {
-    const { content } = req.body;
-    if (!content) {
+    const { title, content } = req.body;
+    if (!content || !title) {
       return res.status(400).json({
-        error: "The content cannot be empty",
+        error: "All fields are required",
       });
     }
 
     const entry = await Text.create({
+      title,
       content,
     });
 
     return res.status(200).json({
       id: entry._id,
+      title: entry.title,
       content: entry.content,
     });
   } catch (error) {
@@ -26,7 +28,6 @@ async function saveText(req, res) {
 async function getText(req, res) {
   try {
     const id = req.params.id;
-    console.log(id);
     if (!id) {
       return res.status(400).json({
         error: "Content ID is required",
@@ -46,4 +47,16 @@ async function getText(req, res) {
   }
 }
 
-module.exports = { saveText, getText };
+async function getAllBlogs(req, res) {
+  try {
+    const allBlogs = await Text.find({}, "-__v").lean();
+    return res.status(200).json(allBlogs);
+  } catch (error) {
+    console.log("Error in fetcing all blogs:", error);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+}
+
+module.exports = { saveText, getText, getAllBlogs };
